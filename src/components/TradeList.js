@@ -4,15 +4,16 @@ import { Row, Col, Card, Button, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { setTrades, setFilter } from '../store/tradeSlice';
 import axios from 'axios';
+import api from '../utils/api';
 
 function TradeList() {
   const dispatch = useDispatch();
-  const { trades, filters } = useSelector((state) => state.trades);
+  const { trades, filters, loading } = useSelector((state) => state.trades);
 
   useEffect(() => {
     const fetchTrades = async () => {
       try {
-        const response = await axios.get('/api/trades');
+        const response = await api.get('/api/trades');
         dispatch(setTrades(response.data));
       } catch (error) {
         console.error('Error fetching trades:', error);
@@ -25,6 +26,10 @@ function TradeList() {
     const { name, value } = e.target;
     dispatch(setFilter({ [name]: value }));
   };
+
+  if (loading || !Array.isArray(trades)) {
+    return <div>Loading...</div>;
+  }
 
   const filteredTrades = trades.filter(trade => {
     return (
@@ -81,7 +86,7 @@ function TradeList() {
                   {trade.option}
                 </Card.Subtitle>
                 <Card.Text>
-                  <strong>Profit:</strong> ${trade.profit.toFixed(2)}<br />
+                  <strong>Profit:</strong> ${Number(trade.profit).toFixed(2)}<br />
                   <strong>Result:</strong> {trade.result}
                 </Card.Text>
                 <Link to={`/trade/${trade.id}`}>
