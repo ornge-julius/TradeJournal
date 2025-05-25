@@ -24,6 +24,14 @@ const pool = new Pool({
 // Configure multer for file uploads
 const upload = multer({ dest: 'uploads/' });
 
+// Helper function to format date string to PostgreSQL datetime
+function formatDate(dateStr) {
+  if (!dateStr) return null;
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
+
 // Routes
 app.get('/api/trades', async (req, res) => {
   try {
@@ -141,6 +149,8 @@ app.post('/api/trades/upload', upload.single('file'), async (req, res) => {
     const lines = fileContent.split('\n');
     const headers = lines[0].split(',').map(header => header.trim());
     
+    console.log('Headers found:', headers);
+    
     let imported = 0;
     for (let i = 1; i < lines.length; i++) {
       if (!lines[i].trim()) continue;
@@ -148,36 +158,58 @@ app.post('/api/trades/upload', upload.single('file'), async (req, res) => {
       const values = lines[i].split(',').map(value => value.trim());
       const trade = {};
       
+      console.log(`\nProcessing line ${i}:`, values);
+      
       headers.forEach((header, index) => {
+        const value = values[index];
+        console.log(`Processing ${header}: "${value}"`);
+        
         switch(header) {
-          case 'Entry Date': trade.entry_date = values[index]; break;
-          case 'Ticker': trade.ticker = values[index]; break;
-          case 'Type': trade.type = values[index].toLowerCase(); break;
-          case 'Result': trade.result = values[index].toLowerCase(); break;
-          case 'Option': trade.option = values[index]; break;
-          case 'Source': trade.source = values[index]; break;
-          case 'Reasoning': trade.reasoning = values[index]; break;
-          case 'Entry Price': trade.entry_price = values[index]; break;
-          case 'Exit Price': trade.exit_price = values[index]; break;
-          case 'Profit': trade.profit = values[index]; break;
-          case 'Exit Date': trade.exit_date = values[index]; break;
-          case 'Notes': trade.notes = values[index]; break;
+          case 'Entry Date': trade.entry_date = formatDate(value); break;
+          case 'Ticker': trade.ticker = value; break;
+          case 'Type': trade.type = value.toLowerCase(); break;
+          case 'Result': trade.result = value.toLowerCase(); break;
+          case 'Option': trade.option = value; break;
+          case 'Source': trade.source = value; break;
+          case 'Reasoning': trade.reasoning = value; break;
+          case 'Entry Price': 
+            trade.entry_price = value ? parseFloat(value.replace(/[^0-9.-]/g, '')) : null;
+            console.log(`Parsed Entry Price: ${trade.entry_price}`);
+            break;
+          case 'Exit Price': 
+            trade.exit_price = value ? parseFloat(value.replace(/[^0-9.-]/g, '')) : null;
+            console.log(`Parsed Exit Price: ${trade.exit_price}`);
+            break;
+          case 'Profit': 
+            trade.profit = value ? parseFloat(value.replace(/[^0-9.-]/g, '')) : null;
+            console.log(`Parsed Profit: ${trade.profit}`);
+            break;
+          case 'Exit Date': trade.exit_date = formatDate(value); break;
+          case 'Notes': trade.notes = value; break;
         }
       });
 
-      await pool.query(
-        `INSERT INTO trades (
-          ticker, type, entry_date, exit_date, result, option, source,
-          reasoning, entry_price, exit_price, profit, notes
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-        [
-          trade.ticker, trade.type, trade.entry_date, trade.exit_date,
-          trade.result, trade.option, trade.source, trade.reasoning,
-          trade.entry_price, trade.exit_price, trade.profit, trade.notes
-        ]
-      );
-      
-      imported++;
+      console.log('Final trade object:', trade);
+
+      try {
+        const result = await pool.query(
+          `INSERT INTO trades (
+            ticker, type, entry_date, exit_date, result, option, source,
+            reasoning, entry_price, exit_price, profit, notes
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+          [
+            trade.ticker, trade.type, trade.entry_date, trade.exit_date,
+            trade.result, trade.option, trade.source, trade.reasoning,
+            trade.entry_price, trade.exit_price, trade.profit, trade.notes
+          ]
+        );
+        console.log('Successfully inserted trade:', result.rows[0]);
+        imported++;
+      } catch (dbError) {
+        console.error(`Error inserting trade at line ${i}:`, dbError);
+        console.error('Failed trade data:', trade);
+        throw dbError;
+      }
     }
 
     // Clean up uploaded file
