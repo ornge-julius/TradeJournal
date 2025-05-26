@@ -177,11 +177,11 @@ app.post('/api/trades/upload', upload.single('file'), async (req, res) => {
               if (!trade.ticker) throw new Error('Ticker is required');
               break;
             case 'Type': 
-              trade.type = value.toLowerCase();
+              trade.type = value;
               if (!trade.type) throw new Error('Type is required');
               break;
             case 'Result': 
-              trade.result = value.toLowerCase();
+              trade.result = value;
               if (!trade.result) throw new Error('Result is required');
               break;
             case 'Option': 

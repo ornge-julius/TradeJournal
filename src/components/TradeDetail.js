@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Button, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
+import api from '../utils/api';
 
 function TradeDetail() {
   const { id } = useParams();
@@ -11,7 +12,7 @@ function TradeDetail() {
   useEffect(() => {
     const fetchTrade = async () => {
       try {
-        const response = await axios.get(`/api/trades/${id}`);
+        const response = await api.get(`/api/trades/${id}`);
         setTrade(response.data);
       } catch (error) {
         console.error('Error fetching trade:', error);
@@ -41,8 +42,8 @@ function TradeDetail() {
         <Row>
           <Col md={6}>
             <h5>Trade Details</h5>
-            <p><strong>Entry Date:</strong> {new Date(trade.entryDate).toLocaleDateString()}</p>
-            <p><strong>Exit Date:</strong> {new Date(trade.exitDate).toLocaleDateString()}</p>
+            <p><strong>Entry Date:</strong> {new Date(trade.entry_date).toLocaleDateString()}</p>
+            <p><strong>Exit Date:</strong> {new Date(trade.exit_date).toLocaleDateString()}</p>
             <p><strong>Type:</strong> {trade.type}</p>
             <p><strong>Option:</strong> {trade.option}</p>
             <p><strong>Result:</strong> {trade.result}</p>
@@ -50,8 +51,8 @@ function TradeDetail() {
           </Col>
           <Col md={6}>
             <h5>Financial Details</h5>
-            <p><strong>Entry Price:</strong> ${trade.entryPrice}</p>
-            <p><strong>Exit Price:</strong> ${trade.exitPrice}</p>
+            <p><strong>Entry Price:</strong> ${trade.entry_price}</p>
+            <p><strong>Exit Price:</strong> ${trade.exit_price}</p>
             <p><strong>Profit:</strong> ${trade.profit}</p>
           </Col>
         </Row>
