@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Form, Button, Card } from 'react-bootstrap';
 import axios from 'axios';
+import api from '../utils/api';
 
 function TradeForm() {
   const { id } = useParams();
@@ -25,7 +26,7 @@ function TradeForm() {
     if (id) {
       const fetchTrade = async () => {
         try {
-          const response = await axios.get(`/api/trades/${id}`);
+          const response = await api.get(`/api/trades/${id}`);
           setFormData(response.data);
         } catch (error) {
           console.error('Error fetching trade:', error);
@@ -47,9 +48,9 @@ function TradeForm() {
     e.preventDefault();
     try {
       if (id) {
-        await axios.put(`/api/trades/${id}`, formData);
+        await api.put(`/api/trades/${id}`, formData);
       } else {
-        await axios.post('/api/trades', formData);
+        await api.post('/api/trades', formData);
       }
       navigate('/');
     } catch (error) {
@@ -104,7 +105,7 @@ function TradeForm() {
             <Form.Control
               type="date"
               name="entryDate"
-              value={formData.entryDate}
+              value={formData.entry_date}
               onChange={handleChange}
               required
             />
@@ -115,7 +116,7 @@ function TradeForm() {
             <Form.Control
               type="date"
               name="exitDate"
-              value={formData.exitDate}
+              value={formData.exit_date}
               onChange={handleChange}
               required
             />
@@ -161,7 +162,7 @@ function TradeForm() {
             <Form.Control
               type="text"
               name="entryPrice"
-              value={formData.entryPrice}
+              value={formData.entry_price}
               onChange={handleChange}
               placeholder="Enter price"
               required
@@ -173,7 +174,7 @@ function TradeForm() {
             <Form.Control
               type="text"
               name="exitPrice"
-              value={formData.exitPrice}
+              value={formData.exit_price}
               onChange={handleChange}
               placeholder="Enter price"
               required

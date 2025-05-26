@@ -38,8 +38,8 @@ function Dashboard() {
 
   useEffect(() => {
     if (trades.length > 0) {
-      const winningTrades = trades.filter(trade => trade.result === 'win');
-      const losingTrades = trades.filter(trade => trade.result === 'loss');
+      const winningTrades = trades.filter(trade => trade.result === 'Win');
+      const losingTrades = trades.filter(trade => trade.result === 'Loss');
       const totalProfit = trades.reduce((sum, trade) => sum + trade.profit, 0);
 
       setStats({
