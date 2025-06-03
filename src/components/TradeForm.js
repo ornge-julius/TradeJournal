@@ -26,7 +26,28 @@ function TradeForm() {
       const fetchTrade = async () => {
         try {
           const response = await axios.get(`/api/trades/${id}`);
-          setFormData(response.data);
+
+          // Convert snake_case keys from the API to camelCase so they match the
+          // fields used in this form. Any keys that are already camelCase are
+          // passed through unchanged.
+          const data = response.data;
+          const formatted = {
+            id: data.id,
+            ticker: data.ticker,
+            type: data.type,
+            entryDate: data.entry_date,
+            exitDate: data.exit_date,
+            result: data.result,
+            option: data.option,
+            source: data.source,
+            reasoning: data.reasoning,
+            entryPrice: data.entry_price,
+            exitPrice: data.exit_price,
+            profit: data.profit,
+            notes: data.notes,
+          };
+
+          setFormData(formatted);
         } catch (error) {
           console.error('Error fetching trade:', error);
         }
